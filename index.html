@@ -89,6 +89,20 @@ body {
     text-align: center;
     z-index: 1;
 }
+
+#back-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    padding: 10px 20px;
+    background-color: #5b3943;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+    z-index: 1000;
+}
         </style>
         <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
         <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
@@ -98,6 +112,8 @@ body {
             <button id="pc-button">PC</button>
             <button id="mobile-button">Mobile</button>
         </div>
+
+        <button id="back-button">Back to Device Options</button>
 
         <canvas id="canvas" style="display: none;">
             Your browser does not support the canvas tag.
@@ -114,16 +130,24 @@ body {
         </div>
 
         <script>
+            const backButton = document.getElementById('back-button');
+
             document.getElementById('pc-button').addEventListener('click', () => {
                 document.getElementById('device-selection').style.display = 'none';
                 document.getElementById('canvas').style.display = 'block';
                 document.getElementById('status').style.display = 'block';
+                backButton.style.display = 'block';
                 startPCGame();
             });
 
             document.getElementById('mobile-button').addEventListener('click', () => {
                 document.getElementById('device-selection').style.display = 'none';
+                backButton.style.display = 'block';
                 startMobileGame();
+            });
+
+            backButton.addEventListener('click', () => {
+                location.reload(); // Reload the page to return to the device selection
             });
 
             function startPCGame() {

@@ -89,33 +89,13 @@ body {
     text-align: center;
     z-index: 1;
 }
-
-#back-button {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 10px 20px;
-    background-color: #5b3943;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: none;
-    z-index: 1000;
-}
         </style>
         <link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
-        <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+
     </head>
     <body>
-        <div id="device-selection">
-            <button id="pc-button">PC</button>
-            <button id="mobile-button">Mobile</button>
-        </div>
-
-        <button id="back-button">Back to Device Options</button>
-
-        <canvas id="canvas" style="display: none;">
+        <canvas id="canvas">
             Your browser does not support the canvas tag.
         </canvas>
 
@@ -123,114 +103,123 @@ body {
             Your browser does not support JavaScript.
         </noscript>
 
-        <div id="status" style="display: none;">
+        <div id="status">
             <img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
             <progress id="status-progress"></progress>
             <div id="status-notice"></div>
         </div>
 
         <script>
-            const backButton = document.getElementById('back-button');
-
-            document.getElementById('pc-button').addEventListener('click', () => {
-                document.getElementById('device-selection').style.display = 'none';
-                document.getElementById('canvas').style.display = 'block';
-                document.getElementById('status').style.display = 'block';
-                backButton.style.display = 'block';
-                startPCGame();
-            });
-
-            document.getElementById('mobile-button').addEventListener('click', () => {
-                document.getElementById('device-selection').style.display = 'none';
-                backButton.style.display = 'block';
-                startMobileGame();
-            });
-
-            backButton.addEventListener('click', () => {
-                location.reload(); // Reload the page to return to the device selection
-            });
-
-            function startPCGame() {
-                const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":25128400,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
-                const GODOT_THREADS_ENABLED = true;
-                const engine = new Engine(GODOT_CONFIG);
-
-                (function () {
-                    const statusOverlay = document.getElementById('status');
-                    const statusProgress = document.getElementById('status-progress');
-                    const statusNotice = document.getElementById('status-notice');
-
-                    let initializing = true;
-                    let statusMode = '';
-
-                    function setStatusMode(mode) {
-                        if (statusMode === mode || !initializing) {
-                            return;
-                        }
-                        if (mode === 'hidden') {
-                            statusOverlay.remove();
-                            initializing = false;
-                            return;
-                        }
-                        statusOverlay.style.visibility = 'visible';
-                        statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-                        statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-                        statusMode = mode;
-                    }
-
-                    function setStatusNotice(text) {
-                        while (statusNotice.lastChild) {
-                            statusNotice.removeChild(statusNotice.lastChild);
-                        }
-                        const lines = text.split('\n');
-                        lines.forEach((line) => {
-                            statusNotice.appendChild(document.createTextNode(line));
-                            statusNotice.appendChild(document.createElement('br'));
-                        });
-                    }
-
-                    function displayFailureNotice(err) {
-                        console.error(err);
-                        if (err instanceof Error) {
-                            setStatusNotice(err.message);
-                        } else if (typeof err === 'string') {
-                            setStatusNotice(err);
-                        } else {
-                            setStatusNotice('An unknown error occurred.');
-                        }
-                        setStatusMode('notice');
-                        initializing = false;
-                    }
-
-                    const missing = Engine.getMissingFeatures({
-                        threads: GODOT_THREADS_ENABLED,
-                    });
-
-                    if (missing.length !== 0) {
-                        displayFailureNotice('Missing features: ' + missing.join(', '));
-                    } else {
-                        setStatusMode('progress');
-                        engine.startGame({
-                            'onProgress': function (current, total) {
-                                if (current > 0 && total > 0) {
-                                    statusProgress.value = current;
-                                    statusProgress.max = total;
-                                } else {
-                                    statusProgress.removeAttribute('value');
-                                    statusProgress.removeAttribute('max');
-                                }
-                            },
-                        }).then(() => {
-                            setStatusMode('hidden');
-                        }, displayFailureNotice);
-                    }
-                }());
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('coi-serviceworker.min.js');
             }
+        </script>
 
-            function startMobileGame() {
-                // Redirect to the mobile-specific index.mobile.html
-                window.location.href = "index.mobile.html";
+        <script src="index.js"></script>
+	    <script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":25128400,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_THREADS_ENABLED = true;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+    const statusOverlay = document.getElementById('status');
+    const statusProgress = document.getElementById('status-progress');
+    const statusNotice = document.getElementById('status-notice');
+
+    let initializing = true;
+    let statusMode = '';
+
+    function setStatusMode(mode) {
+        if (statusMode === mode || !initializing) {
+            return;
+        }
+        if (mode === 'hidden') {
+            statusOverlay.remove();
+            initializing = false;
+            return;
+        }
+        statusOverlay.style.visibility = 'visible';
+        statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+        statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+        statusMode = mode;
+    }
+
+    function setStatusNotice(text) {
+        while (statusNotice.lastChild) {
+            statusNotice.removeChild(statusNotice.lastChild);
+        }
+        const lines = text.split('\n');
+        lines.forEach((line) => {
+            statusNotice.appendChild(document.createTextNode(line));
+            statusNotice.appendChild(document.createElement('br'));
+        });
+    }
+
+    function displayFailureNotice(err) {
+        console.error(err);
+        if (err instanceof Error) {
+            setStatusNotice(err.message);
+        } else if (typeof err === 'string') {
+            setStatusNotice(err);
+        } else {
+            setStatusNotice('An unknown error occurred.');
+        }
+        setStatusMode('notice');
+        initializing = false;
+    }
+
+    const missing = Engine.getMissingFeatures({
+        threads: GODOT_THREADS_ENABLED,
+    });
+
+    if (missing.length !== 0) {
+        if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+            let serviceWorkerRegistrationPromise;
+            try {
+                serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+            } catch (err) {
+                serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
             }
+            // There's a chance that installing the service worker would fix the issue
+            Promise.race([
+                serviceWorkerRegistrationPromise.then((registration) => {
+                    if (registration != null) {
+                        return Promise.reject(new Error('Service worker already exists.'));
+                    }
+                    return registration;
+                }).then(() => engine.installServiceWorker()),
+                // For some reason, `getRegistration()` can stall
+                new Promise((resolve) => {
+                    setTimeout(() => resolve(), 2000);
+                }),
+            ]).then(() => {
+                // Reload if there was no error.
+                window.location.reload();
+            }).catch((err) => {
+                console.error('Error while registering service worker:', err);
+            });
+        } else {
+            // Display the message as usual
+            const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+            displayFailureNotice(missingMsg + missing.join('\n'));
+        }
+    } else {
+        setStatusMode('progress');
+        engine.startGame({
+            'onProgress': function (current, total) {
+                if (current > 0 && total > 0) {
+                    statusProgress.value = current;
+                    statusProgress.max = total;
+                } else {
+                    statusProgress.removeAttribute('value');
+                    statusProgress.removeAttribute('max');
+                }
+            },
+        }).then(() => {
+            setStatusMode('hidden');
+        }, displayFailureNotice);
+    }
+}());
         </script>
     </body>
 </html>

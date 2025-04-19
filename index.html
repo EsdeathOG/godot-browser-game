@@ -122,8 +122,8 @@ body {
             });
 
             document.getElementById('mobile-button').addEventListener('click', () => {
-                // Redirect to the mobile-specific index.html
-                window.location.href = "index.mobile.html";
+                document.getElementById('device-selection').style.display = 'none';
+                startMobileGame();
             });
 
             function startPCGame() {
@@ -201,6 +201,11 @@ body {
                         }, displayFailureNotice);
                     }
                 }());
+            }
+
+            function startMobileGame() {
+                // Redirect to the mobile-specific index.mobile.html
+                window.location.href = "index.mobile.html";
             }
         </script>
     </body>

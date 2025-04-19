@@ -20,7 +20,6 @@ body {
 
 #canvas {
     display: block;
-    border: 1px solid red;
 }
 
 #canvas:focus {
@@ -96,19 +95,7 @@ body {
 
     </head>
     <body>
-        <div id="device-selection">
-            <button id="pc-button">PC</button>
-            <button id="mobile-button">Mobile</button>
-        </div>
-
-        <div id="mobile-controls" style="display: none; position: absolute; bottom: 10%; width: 100%; text-align: center;">
-            <button id="up-button" style="margin: 5px;">Up</button><br>
-            <button id="left-button" style="margin: 5px;">Left</button>
-            <button id="down-button" style="margin: 5px;">Down</button>
-            <button id="right-button" style="margin: 5px;">Right</button>
-        </div>
-
-        <canvas id="canvas" style="display: none;">
+        <canvas id="canvas">
             Your browser does not support the canvas tag.
         </canvas>
 
@@ -116,133 +103,11 @@ body {
             Your browser does not support JavaScript.
         </noscript>
 
-        <div id="status" style="display: none;">
+        <div id="status">
             <img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
             <progress id="status-progress"></progress>
             <div id="status-notice"></div>
         </div>
-
-        <script>
-            document.getElementById('pc-button').addEventListener('click', () => {
-                document.getElementById('device-selection').style.display = 'none';
-                document.getElementById('canvas').style.display = 'block';
-                document.getElementById('status').style.display = 'block';
-                startGame();
-            });
-
-            document.getElementById('mobile-button').addEventListener('click', () => {
-                document.getElementById('device-selection').style.display = 'none';
-                document.getElementById('mobile-controls').style.display = 'block'; // Ensure this line is present
-                document.getElementById('canvas').style.display = 'block';
-                document.getElementById('status').style.display = 'block';
-
-                // Simulate WASD keys with mobile buttons
-                const simulateKey = (key, type) => {
-                    const event = new KeyboardEvent(type, { key });
-                    window.dispatchEvent(event);
-                };
-
-                document.getElementById('up-button').addEventListener('mousedown', () => simulateKey('w', 'keydown'));
-                document.getElementById('up-button').addEventListener('mouseup', () => simulateKey('w', 'keyup'));
-
-                document.getElementById('down-button').addEventListener('mousedown', () => simulateKey('s', 'keydown'));
-                document.getElementById('down-button').addEventListener('mouseup', () => simulateKey('s', 'keyup'));
-
-                document.getElementById('left-button').addEventListener('mousedown', () => simulateKey('a', 'keydown'));
-                document.getElementById('left-button').addEventListener('mouseup', () => simulateKey('a', 'keyup'));
-
-                document.getElementById('right-button').addEventListener('mousedown', () => simulateKey('d', 'keydown'));
-                document.getElementById('right-button').addEventListener('mouseup', () => simulateKey('d', 'keyup'));
-
-                startGame();
-            });
-
-            function startGame() {
-                const GODOT_CONFIG = {
-                    "args": [],
-                    "canvasResizePolicy": 2,
-                    "ensureCrossOriginIsolationHeaders": true,
-                    "executable": "index",
-                    "experimentalVK": false,
-                    "fileSizes": { "index.pck": 25128400, "index.wasm": 43699190 },
-                    "focusCanvas": true,
-                    "gdextensionLibs": []
-                };
-                const GODOT_THREADS_ENABLED = true;
-                const engine = new Engine(GODOT_CONFIG);
-
-                (function () {
-                    const statusOverlay = document.getElementById('status');
-                    const statusProgress = document.getElementById('status-progress');
-                    const statusNotice = document.getElementById('status-notice');
-
-                    let initializing = true;
-                    let statusMode = '';
-
-                    function setStatusMode(mode) {
-                        if (statusMode === mode || !initializing) {
-                            return;
-                        }
-                        if (mode === 'hidden') {
-                            statusOverlay.remove();
-                            initializing = false;
-                            return;
-                        }
-                        statusOverlay.style.visibility = 'visible';
-                        statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-                        statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-                        statusMode = mode;
-                    }
-
-                    function setStatusNotice(text) {
-                        while (statusNotice.lastChild) {
-                            statusNotice.removeChild(statusNotice.lastChild);
-                        }
-                        const lines = text.split('\n');
-                        lines.forEach((line) => {
-                            statusNotice.appendChild(document.createTextNode(line));
-                            statusNotice.appendChild(document.createElement('br'));
-                        });
-                    }
-
-                    function displayFailureNotice(err) {
-                        console.error(err);
-                        if (err instanceof Error) {
-                            setStatusNotice(err.message);
-                        } else if (typeof err === 'string') {
-                            setStatusNotice(err);
-                        } else {
-                            setStatusNotice('An unknown error occurred.');
-                        }
-                        setStatusMode('notice');
-                        initializing = false;
-                    }
-
-                    const missing = Engine.getMissingFeatures({
-                        threads: GODOT_THREADS_ENABLED,
-                    });
-
-                    if (missing.length !== 0) {
-                        displayFailureNotice('Missing features: ' + missing.join(', '));
-                    } else {
-                        setStatusMode('progress');
-                        engine.startGame({
-                            'onProgress': function (current, total) {
-                                if (current > 0 && total > 0) {
-                                    statusProgress.value = current;
-                                    statusProgress.max = total;
-                                } else {
-                                    statusProgress.removeAttribute('value');
-                                    statusProgress.removeAttribute('max');
-                                }
-                            },
-                        }).then(() => {
-                            setStatusMode('hidden');
-                        }, displayFailureNotice);
-                    }
-                }());
-            }
-        </script>
 
         <script>
             if ('serviceWorker' in navigator) {
@@ -251,5 +116,110 @@ body {
         </script>
 
         <script src="index.js"></script>
+	    <script>
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":25128400,"index.wasm":43699190},"focusCanvas":true,"gdextensionLibs":[]};
+const GODOT_THREADS_ENABLED = true;
+const engine = new Engine(GODOT_CONFIG);
+
+(function () {
+    const statusOverlay = document.getElementById('status');
+    const statusProgress = document.getElementById('status-progress');
+    const statusNotice = document.getElementById('status-notice');
+
+    let initializing = true;
+    let statusMode = '';
+
+    function setStatusMode(mode) {
+        if (statusMode === mode || !initializing) {
+            return;
+        }
+        if (mode === 'hidden') {
+            statusOverlay.remove();
+            initializing = false;
+            return;
+        }
+        statusOverlay.style.visibility = 'visible';
+        statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
+        statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
+        statusMode = mode;
+    }
+
+    function setStatusNotice(text) {
+        while (statusNotice.lastChild) {
+            statusNotice.removeChild(statusNotice.lastChild);
+        }
+        const lines = text.split('\n');
+        lines.forEach((line) => {
+            statusNotice.appendChild(document.createTextNode(line));
+            statusNotice.appendChild(document.createElement('br'));
+        });
+    }
+
+    function displayFailureNotice(err) {
+        console.error(err);
+        if (err instanceof Error) {
+            setStatusNotice(err.message);
+        } else if (typeof err === 'string') {
+            setStatusNotice(err);
+        } else {
+            setStatusNotice('An unknown error occurred.');
+        }
+        setStatusMode('notice');
+        initializing = false;
+    }
+
+    const missing = Engine.getMissingFeatures({
+        threads: GODOT_THREADS_ENABLED,
+    });
+
+    if (missing.length !== 0) {
+        if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
+            let serviceWorkerRegistrationPromise;
+            try {
+                serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
+            } catch (err) {
+                serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
+            }
+            // There's a chance that installing the service worker would fix the issue
+            Promise.race([
+                serviceWorkerRegistrationPromise.then((registration) => {
+                    if (registration != null) {
+                        return Promise.reject(new Error('Service worker already exists.'));
+                    }
+                    return registration;
+                }).then(() => engine.installServiceWorker()),
+                // For some reason, `getRegistration()` can stall
+                new Promise((resolve) => {
+                    setTimeout(() => resolve(), 2000);
+                }),
+            ]).then(() => {
+                // Reload if there was no error.
+                window.location.reload();
+            }).catch((err) => {
+                console.error('Error while registering service worker:', err);
+            });
+        } else {
+            // Display the message as usual
+            const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
+            displayFailureNotice(missingMsg + missing.join('\n'));
+        }
+    } else {
+        setStatusMode('progress');
+        engine.startGame({
+            'onProgress': function (current, total) {
+                if (current > 0 && total > 0) {
+                    statusProgress.value = current;
+                    statusProgress.max = total;
+                } else {
+                    statusProgress.removeAttribute('value');
+                    statusProgress.removeAttribute('max');
+                }
+            },
+        }).then(() => {
+            setStatusMode('hidden');
+        }, displayFailureNotice);
+    }
+}());
+        </script>
     </body>
 </html>
